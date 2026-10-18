@@ -1,0 +1,146 @@
+[
+  {
+    "case_id": "explicit_learning_request",
+    "description": "Child explicitly requests to learn — mode set to learning",
+    "input": {
+      "child_message": "Teach me new words!",
+      "current_mode": "conversation",
+      "session_context": {"active_exercise": false, "turn_count": 3}
+    },
+    "expected": {
+      "mode": "learning",
+      "reason": "explicit_learning_intent",
+      "llm_needed": true
+    }
+  },
+  {
+    "case_id": "topic_share_is_conversation",
+    "description": "Child shares a topic or asks a personal question — conversation mode",
+    "input": {
+      "child_message": "I like cats! Do you like cats?",
+      "current_mode": "learning",
+      "session_context": {"active_exercise": false, "turn_count": 5}
+    },
+    "expected": {
+      "mode": "conversation",
+      "reason": "topic_share_detected",
+      "llm_needed": true
+    }
+  },
+  {
+    "case_id": "explicit_game_request",
+    "description": "Child explicitly asks to play a game — engagement mode",
+    "input": {
+      "child_message": "Let's play a game!",
+      "current_mode": "learning",
+      "session_context": {"active_exercise": true, "turn_count": 7}
+    },
+    "expected": {
+      "mode": "engagement",
+      "reason": "explicit_game_intent",
+      "llm_needed": true
+    }
+  },
+  {
+    "case_id": "explicit_break_request",
+    "description": "Child explicitly asks to stop or take a break — support mode",
+    "input": {
+      "child_message": "Stop! I'm done.",
+      "current_mode": "learning",
+      "session_context": {"active_exercise": true, "turn_count": 10}
+    },
+    "expected": {
+      "mode": "support",
+      "reason": "explicit_stop_request",
+      "llm_needed": false
+    }
+  },
+  {
+    "case_id": "possible_frustration_supportive_not_diagnostic",
+    "description": "Child expresses frustration — support mode with non-diagnostic response",
+    "input": {
+      "child_message": "This is too hard! I can't do this!",
+      "current_mode": "learning",
+      "session_context": {"active_exercise": true, "turn_count": 8}
+    },
+    "expected": {
+      "mode": "support",
+      "reason": "frustration_signal_detected",
+      "llm_needed": false,
+      "response_must_not_contain": ["anxiety", "depression", "ADHD", "disorder", "diagnosis"],
+      "sentiment_stored_permanently": false
+    }
+  },
+  {
+    "case_id": "ambiguous_mood_not_stored_as_fact",
+    "description": "Child sends ambiguous signal — current mode continues, mood is not stored",
+    "input": {
+      "child_message": "hmm ok",
+      "current_mode": "learning",
+      "session_context": {"active_exercise": true, "turn_count": 4}
+    },
+    "expected": {
+      "mode": "learning",
+      "reason": "ambiguous_continue_current_mode",
+      "llm_needed": true,
+      "sentiment_stored_permanently": false
+    }
+  },
+  {
+    "case_id": "change_topic_overrides_lesson",
+    "description": "Child introduces unrelated topic during exercise — switches to conversation",
+    "input": {
+      "child_message": "My dog is so fluffy!",
+      "current_mode": "learning",
+      "session_context": {"active_exercise": true, "current_skill": "l1_numbers", "turn_count": 6}
+    },
+    "expected": {
+      "mode": "conversation",
+      "reason": "topic_change_overrides_exercise",
+      "llm_needed": true
+    }
+  },
+  {
+    "case_id": "ordinary_message_not_forced_into_quiz",
+    "description": "In conversation mode, ordinary message is not turned into a quiz",
+    "input": {
+      "child_message": "I had pasta today",
+      "current_mode": "conversation",
+      "session_context": {"active_exercise": false, "turn_count": 3}
+    },
+    "expected": {
+      "mode": "conversation",
+      "reason": "conversation_continues",
+      "llm_needed": true,
+      "must_not_contain_quiz": true
+    }
+  },
+  {
+    "case_id": "exercise_response_stays_learning",
+    "description": "Child responds to active exercise — stays in learning mode",
+    "input": {
+      "child_message": "Blue!",
+      "current_mode": "learning",
+      "session_context": {"active_exercise": true, "current_skill": "l1_colors", "turn_count": 5}
+    },
+    "expected": {
+      "mode": "learning",
+      "reason": "exercise_response_continues",
+      "llm_needed": false
+    }
+  },
+  {
+    "case_id": "bye_triggers_support",
+    "description": "Child says bye — support mode with graceful session handling",
+    "input": {
+      "child_message": "Bye bye!",
+      "current_mode": "conversation",
+      "session_context": {"active_exercise": false, "turn_count": 12}
+    },
+    "expected": {
+      "mode": "support",
+      "reason": "explicit_stop_request",
+      "llm_needed": false
+    }
+  }
+]

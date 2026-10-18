@@ -1,0 +1,11 @@
+requirement_id,requirement,acceptance_criteria,test_reference,status,notes
+REQ-001,Progressive learning,"Backend selects L1/L2/L3 from stored skill evidence",backend/tests/unit/test_progression.py,planned,
+REQ-002,Interaction modes,"Backend selects a mode from explicit intent and context",backend/tests/unit/test_mode_manager.py,planned,
+REQ-003,SEL,"Supportive responses follow policy and are not diagnostic",backend/tests/safety/test_sel_policy.py,planned,
+REQ-004,Context-aware personalization,"Only relevant child-scoped context is supplied to the LLM",backend/tests/unit/test_context_builder.py,planned,
+REQ-005,Durable progress,"Progress persists across sessions",backend/tests/integration/test_progress_persistence.py,planned,
+REQ-006,Child privacy and authorization,"Cross-child access is denied and deletion/retention are tested",backend/tests/security/test_child_isolation.py,planned,
+REQ-007,Response validation,"Invalid or unsafe model output is rejected or replaced safely",backend/tests/safety/test_output_validation.py,planned,
+REQ-008,Latency,"P95 end-to-end completion latency is below 2000 ms for defined normal load",scripts/measure_latency.py,planned,
+REQ-009,Frontend journey,"Child can chat and see persisted progress",frontend/tests/e2e/child-journey.spec.ts,planned,
+REQ-010,Operational recovery,"Backup restore and rollback are evidenced",docs/operations/restore-drill.md,planned,

@@ -1,0 +1,192 @@
+[
+  {
+    "case_id": "new_child_starts_l1",
+    "description": "A new child with no assessment history starts at Level 1",
+    "input": {
+      "child_id": "child_test_001",
+      "current_level": null,
+      "skills": {},
+      "assessment_events": []
+    },
+    "expected": {
+      "level": "L1",
+      "reason": "no_history_default_l1",
+      "can_advance": false
+    }
+  },
+  {
+    "case_id": "insufficient_evidence_stays_level",
+    "description": "Child has some assessment events but not enough to advance from L1",
+    "input": {
+      "child_id": "child_test_002",
+      "current_level": "L1",
+      "skills": {
+        "l1_colors": {"state": "developing", "successful_events": 2, "sessions_with_success": 1},
+        "l1_animals": {"state": "developing", "successful_events": 1, "sessions_with_success": 1}
+      },
+      "assessment_events": [
+        {"skill_id": "l1_colors", "result": "pass", "session_id": "sess_01"},
+        {"skill_id": "l1_colors", "result": "pass", "session_id": "sess_01"},
+        {"skill_id": "l1_animals", "result": "pass", "session_id": "sess_01"}
+      ]
+    },
+    "expected": {
+      "level": "L1",
+      "reason": "insufficient_mastered_skills",
+      "can_advance": false
+    }
+  },
+  {
+    "case_id": "advance_l1_to_l2",
+    "description": "Child has mastered 3 L1 skills across multiple sessions and advances to L2",
+    "input": {
+      "child_id": "child_test_003",
+      "current_level": "L1",
+      "skills": {
+        "l1_colors": {"state": "mastered", "successful_events": 4, "sessions_with_success": 3},
+        "l1_animals": {"state": "mastered", "successful_events": 3, "sessions_with_success": 2},
+        "l1_numbers": {"state": "mastered", "successful_events": 3, "sessions_with_success": 2},
+        "l1_body": {"state": "developing", "successful_events": 1, "sessions_with_success": 1}
+      },
+      "assessment_events": []
+    },
+    "expected": {
+      "level": "L2",
+      "reason": "promotion_criteria_met",
+      "can_advance": true
+    }
+  },
+  {
+    "case_id": "advance_l2_to_l3",
+    "description": "Child has all L1 mastered and 3 L2 skills mastered across multiple sessions",
+    "input": {
+      "child_id": "child_test_004",
+      "current_level": "L2",
+      "skills": {
+        "l1_colors": {"state": "mastered", "successful_events": 5, "sessions_with_success": 3},
+        "l1_animals": {"state": "mastered", "successful_events": 4, "sessions_with_success": 3},
+        "l1_numbers": {"state": "mastered", "successful_events": 3, "sessions_with_success": 2},
+        "l1_body": {"state": "mastered", "successful_events": 3, "sessions_with_success": 2},
+        "l1_family": {"state": "mastered", "successful_events": 3, "sessions_with_success": 2},
+        "l1_food": {"state": "mastered", "successful_events": 3, "sessions_with_success": 2},
+        "l2_phrases": {"state": "mastered", "successful_events": 4, "sessions_with_success": 3},
+        "l2_verbs": {"state": "mastered", "successful_events": 3, "sessions_with_success": 2},
+        "l2_adjectives": {"state": "mastered", "successful_events": 3, "sessions_with_success": 2}
+      },
+      "assessment_events": []
+    },
+    "expected": {
+      "level": "L3",
+      "reason": "promotion_criteria_met",
+      "can_advance": true
+    }
+  },
+  {
+    "case_id": "missing_prerequisite_blocks_advance",
+    "description": "Child has 3 L2 skills mastered but not all L1 skills are mastered — promotion blocked",
+    "input": {
+      "child_id": "child_test_005",
+      "current_level": "L2",
+      "skills": {
+        "l1_colors": {"state": "mastered", "successful_events": 5, "sessions_with_success": 3},
+        "l1_animals": {"state": "mastered", "successful_events": 4, "sessions_with_success": 3},
+        "l1_numbers": {"state": "mastered", "successful_events": 3, "sessions_with_success": 2},
+        "l1_body": {"state": "developing", "successful_events": 2, "sessions_with_success": 1},
+        "l1_family": {"state": "unassessed", "successful_events": 0, "sessions_with_success": 0},
+        "l1_food": {"state": "mastered", "successful_events": 3, "sessions_with_success": 2},
+        "l2_phrases": {"state": "mastered", "successful_events": 4, "sessions_with_success": 3},
+        "l2_verbs": {"state": "mastered", "successful_events": 3, "sessions_with_success": 2},
+        "l2_adjectives": {"state": "mastered", "successful_events": 3, "sessions_with_success": 2}
+      },
+      "assessment_events": []
+    },
+    "expected": {
+      "level": "L2",
+      "reason": "prerequisite_not_met",
+      "can_advance": false
+    }
+  },
+  {
+    "case_id": "cannot_skip_levels",
+    "description": "Child at L1 cannot advance directly to L3 even with excellent performance",
+    "input": {
+      "child_id": "child_test_006",
+      "current_level": "L1",
+      "target_level": "L3",
+      "skills": {
+        "l1_colors": {"state": "mastered", "successful_events": 10, "sessions_with_success": 5},
+        "l1_animals": {"state": "mastered", "successful_events": 8, "sessions_with_success": 4},
+        "l1_numbers": {"state": "mastered", "successful_events": 6, "sessions_with_success": 3}
+      },
+      "assessment_events": []
+    },
+    "expected": {
+      "level": "L2",
+      "reason": "sequential_promotion_only",
+      "can_advance": true,
+      "max_advance_to": "L2"
+    }
+  },
+  {
+    "case_id": "unassessed_is_not_mastered",
+    "description": "Child has enough mastered skills but one prerequisite is unassessed — cannot count it",
+    "input": {
+      "child_id": "child_test_007",
+      "current_level": "L1",
+      "skills": {
+        "l1_colors": {"state": "mastered", "successful_events": 3, "sessions_with_success": 2},
+        "l1_animals": {"state": "mastered", "successful_events": 3, "sessions_with_success": 2},
+        "l1_numbers": {"state": "unassessed", "successful_events": 0, "sessions_with_success": 0}
+      },
+      "assessment_events": []
+    },
+    "expected": {
+      "level": "L1",
+      "reason": "unassessed_skills_cannot_satisfy_prerequisites",
+      "can_advance": false
+    }
+  },
+  {
+    "case_id": "repeated_mistakes_offer_review",
+    "description": "Child makes 3 consecutive mistakes on a mastered skill — skill enters review state",
+    "input": {
+      "child_id": "child_test_008",
+      "current_level": "L2",
+      "skills": {
+        "l1_colors": {"state": "mastered", "successful_events": 5, "sessions_with_success": 3}
+      },
+      "assessment_events": [
+        {"skill_id": "l1_colors", "result": "retry", "session_id": "sess_10"},
+        {"skill_id": "l1_colors", "result": "retry", "session_id": "sess_10"},
+        {"skill_id": "l1_colors", "result": "retry", "session_id": "sess_10"}
+      ]
+    },
+    "expected": {
+      "level": "L2",
+      "skill_state_change": {"l1_colors": "review"},
+      "reason": "consecutive_failures_trigger_review",
+      "can_advance": false
+    }
+  },
+  {
+    "case_id": "single_session_not_enough",
+    "description": "Child has 3 successes for a skill but all in one session — remains developing",
+    "input": {
+      "child_id": "child_test_009",
+      "current_level": "L1",
+      "skills": {
+        "l1_colors": {"state": "developing", "successful_events": 3, "sessions_with_success": 1}
+      },
+      "assessment_events": [
+        {"skill_id": "l1_colors", "result": "pass", "session_id": "sess_01"},
+        {"skill_id": "l1_colors", "result": "pass", "session_id": "sess_01"},
+        {"skill_id": "l1_colors", "result": "pass", "session_id": "sess_01"}
+      ]
+    },
+    "expected": {
+      "level": "L1",
+      "reason": "insufficient_session_spread",
+      "can_advance": false
+    }
+  }
+]

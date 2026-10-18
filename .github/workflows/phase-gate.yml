@@ -1,0 +1,78 @@
+name: Selected Phase Gate
+
+on:
+  workflow_dispatch:
+    inputs:
+      phase:
+        description: "Implementation phase to validate (1–10)"
+        required: true
+        type: choice
+        options:
+          - "1"
+          - "2"
+          - "3"
+          - "4"
+          - "5"
+          - "6"
+          - "7"
+          - "8"
+          - "9"
+          - "10"
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: chatbot_test
+          POSTGRES_PASSWORD: chatbot_test
+          POSTGRES_DB: chatbot_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U chatbot_test -d chatbot_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install backend dependencies when present
+        shell: bash
+        run: |
+          if [[ -f backend/pyproject.toml ]]; then
+            python -m pip install --upgrade pip
+            pip install -e "./backend[dev]"
+          fi
+      - name: Install frontend dependencies when present
+        shell: bash
+        run: |
+          if [[ -f frontend/package-lock.json ]]; then npm ci --prefix frontend; fi
+      - name: Run selected phase gate
+        env:
+          DATABASE_URL: postgresql+asyncpg://chatbot_test:chatbot_test@localhost:5432/chatbot_test
+          TEST_DATABASE_URL: postgresql+asyncpg://chatbot_test:chatbot_test@localhost:5432/chatbot_test
+          LLM_PROVIDER: mock
+          LLM_API_KEY: ""
+          # Configure these as repository/environment secrets for Phase 8 staging benchmarks.
+          PERF_BASE_URL: ${{ secrets.PERF_BASE_URL }}
+          PERF_BEARER_TOKEN: ${{ secrets.PERF_BEARER_TOKEN }}
+          PERF_SESSION_IDS: ${{ vars.PERF_SESSION_IDS }}
+        run: python scripts/phase_gate.py --phase "${{ inputs.phase }}"
+      - name: Upload phase gate evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: phase-gate-${{ inputs.phase }}
+          path: artifacts/phase-gates/phase-${{ inputs.phase }}.json
+          if-no-files-found: ignore
